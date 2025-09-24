@@ -1,0 +1,23 @@
+[project]
+name = "slut-proxy"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "fizzAI", email = "fizzarolli@riseup.net" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "hypercorn>=0.17.3",
+    "msgspec>=0.19.0",
+    "starlette>=0.48.0",
+    "trio>=0.31.0",
+]
+
+[project.scripts]
+slut-proxy = "slut_proxy:cli_entrypoint"
+slut-keygen = "slut_proxy:generate_api_key"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
