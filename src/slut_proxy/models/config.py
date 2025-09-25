@@ -34,7 +34,11 @@ class ModelConfig(Struct):
     supported_parameters: list[str] | None = None
     supported_samplers: list[AvailableSampler] | None = None
 
+class ProxyConfig(Struct):
+    admin_key: str
+
 class Config(Struct):
+    proxy: ProxyConfig
     providers: list[ProviderConfig]
     models: list[ModelConfig]
 

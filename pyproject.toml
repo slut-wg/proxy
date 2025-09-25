@@ -8,6 +8,8 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "anyio-sqlite>=0.2.1",
+    "httpx>=0.28.1",
     "hypercorn>=0.17.3",
     "msgspec>=0.19.0",
     "starlette>=0.48.0",
