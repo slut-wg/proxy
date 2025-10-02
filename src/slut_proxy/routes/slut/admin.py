@@ -1,12 +1,15 @@
 from starlette.requests import Request
 from starlette.routing import Mount, Route
 
+import anyio_sqlite
+
 from slut_proxy.models.slut import ModelMetadata
 from slut_proxy.models.config import Config
 from slut_proxy.utils.responses import MsgspecJSONResponse
 
 def build_routes(config: Config) -> list[Mount]:
     def create_api_key(request: Request):
+        db: anyio_sqlite.Connection = request.state.db  # pyright: ignore[reportMissingTypeArgument, reportAny]
         return MsgspecJSONResponse({"success": True})
 
     def get_api_key(request: Request):
