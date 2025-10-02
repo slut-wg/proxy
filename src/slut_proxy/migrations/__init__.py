@@ -2,7 +2,7 @@ import anyio_sqlite
 
 import importlib
 
-EXPECTED_DB_VERSION = 0
+EXPECTED_DB_VERSION = 2
 
 async def do_migration(con: anyio_sqlite.Connection):  # pyright: ignore[reportMissingTypeArgument]
     version: int = -1

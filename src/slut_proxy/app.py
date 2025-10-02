@@ -11,6 +11,7 @@ from starlette.routing import Route
 from .models.config import Config
 from .routes import build_routes
 from .migrations import do_migration
+from .middleware import AuthMiddleware
 
 class State(TypedDict):
     db: anyio_sqlite.Connection  # pyright: ignore[reportMissingTypeArgument]
@@ -23,5 +24,8 @@ def build_app(slut_config: Config):
             yield {"db": con}
 
     app = Starlette(debug=True, routes=build_routes(slut_config), lifespan=lifespan)
+    
+    # Add authentication middleware
+    app.add_middleware(AuthMiddleware, admin_key=slut_config.proxy.admin_key)
 
     return app

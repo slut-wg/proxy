@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLUT Proxy Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .api-key-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .api-key-item {
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .api-key-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .api-key-value {
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 5px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .permissions {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .success {
+            color: #28a745;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .error {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 14px;
+        }
+        
+        .tab.active {
+            border-bottom: 2px solid #007bff;
+            color: #007bff;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SLUT Proxy Admin Dashboard</h1>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('list')">API Keys</button>
+            <button class="tab" onclick="showTab('create')">Create API Key</button>
+        </div>
+        
+        <div id="list-tab" class="tab-content active">
+            <div class="card">
+                <h2>API Keys</h2>
+                <button class="btn" onclick="loadApiKeys()">Refresh</button>
+                <div id="api-keys" class="api-key-list"></div>
+            </div>
+        </div>
+        
+        <div id="create-tab" class="tab-content">
+            <div class="card">
+                <h2>Create New API Key</h2>
+                <form id="create-api-key-form">
+                    <div class="form-group">
+                        <label>Allowed Providers (one per line):</label>
+                        <textarea id="allowed-providers" class="input" rows="5" placeholder="openai&#10;anthropic&#10;google"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Allowed Models (one per line):</label>
+                        <textarea id="allowed-models" class="input" rows="5" placeholder="gpt-3.5-turbo&#10;gpt-4&#10;claude-3-sonnet"></textarea>
+                    </div>
+                    <button type="submit" class="btn">Create API Key</button>
+                </form>
+                <div id="create-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/v2/admin';
+        let authToken = prompt('Enter admin key:');
+        
+        if (!authToken) {
+            alert('Admin key required');
+            window.location.href = '/';
+        }
+        
+        const headers = {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+        };
+        
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabName === 'list') {
+                loadApiKeys();
+            }
+        }
+        
+        async function loadApiKeys() {
+            try {
+                const response = await fetch(`${API_BASE}/api_keys/list`, {
+                    headers: headers
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const apiKeys = await response.json();
+                const container = document.getElementById('api-keys');
+                
+                if (apiKeys.length === 0) {
+                    container.innerHTML = '<p>No API keys found</p>';
+                    return;
+                }
+                
+                container.innerHTML = apiKeys.map(key => `
+                    <div class="api-key-item">
+                        <div class="api-key-header">
+                            <span class="api-key-value">${key.key}</span>
+                            <button class="btn btn-danger" onclick="deleteApiKey('${key.key}')">Delete</button>
+                        </div>
+                        <div class="permissions">
+                            <strong>Providers:</strong> ${key.allowed_providers.length > 0 ? key.allowed_providers.join(', ') : 'All'}<br>
+                            <strong>Models:</strong> ${key.allowed_models.length > 0 ? key.allowed_models.join(', ') : 'All'}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('api-keys').innerHTML = `<div class="error">Error loading API keys: ${error.message}</div>`;
+            }
+        }
+        
+        async function deleteApiKey(key) {
+            if (!confirm(`Are you sure you want to delete API key ${key}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api_keys`, {
+                    method: 'DELETE',
+                    headers: headers,
+                    body: JSON.stringify({ key: key })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                await loadApiKeys(); // Refresh the list
+            } catch (error) {
+                alert(`Error deleting API key: ${error.message}`);
+            }
+        }
+        
+        document.getElementById('create-api-key-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const providersText = document.getElementById('allowed-providers').value.trim();
+            const modelsText = document.getElementById('allowed-models').value.trim();
+            
+            const allowedProviders = providersText ? providersText.split('\n').filter(p => p.trim()) : [];
+            const allowedModels = modelsText ? modelsText.split('\n').filter(m => m.trim()) : [];
+            
+            try {
+                const response = await fetch(`${API_BASE}/api_keys`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({
+                        allowed_providers: allowedProviders,
+                        allowed_models: allowedModels
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('create-result');
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <strong>API Key Created!</strong><br>
+                        Key: <code>${result.key}</code><br>
+                        <strong>Save this key now - it won't be shown again!</strong>
+                    </div>
+                `;
+                
+                // Clear form
+                document.getElementById('allowed-providers').value = '';
+                document.getElementById('allowed-models').value = '';
+                
+            } catch (error) {
+                document.getElementById('create-result').innerHTML = `<div class="error">Error creating API key: ${error.message}</div>`;
+            }
+        });
+        
+        // Load API keys on page load
+        loadApiKeys();
+    </script>
+</body>
+</html>
