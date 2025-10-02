@@ -13,12 +13,11 @@ The SLUT Proxy is a Python-based server that implements the SLUT protocol specif
 
 ## Features
 
-- 🎀 **Multi-Provider Support**: OpenAI, Anthropic, and more!
-- 🚀 **High Performance**: Async/await with FastAPI-like routing
+- 🎀 **Multi-Provider Support**: Supports any OpenAI-compatible endpoint, with more coming soon!
 - 🔐 **Built-in Auth**: API key management and access control
 - 📊 **Admin Dashboard**: Web interface for monitoring and management
 - 🔄 **OpenAI Compatible**: Drop-in replacement for OpenAI API
-- 🌊 **Streaming Support**: Real-time text generation via SSE
+- 🌊 **(Untested) Streaming Support**: Real-time text generation via SSE
 
 ## Quick Start
 
@@ -32,23 +31,27 @@ uv sync
 
 ### Configuration
 
-Create a `config.toml` file:
+Create a `config.toml` file, for example with Openrouter:
 
 ```toml
 [proxy]
-admin_key = "your-secret-admin-key"
-host = "0.0.0.0"
-port = 8000
+admin_key = "test"
 
-[providers.openai]
-base_url = "https://api.openai.com/v1"
-api_key = "sk-your-openai-key"
-default_models = ["gpt-4", "gpt-3.5-turbo"]
+[[providers]]
+name = "openrouter"
+type = "openai"
+base_url = "https://openrouter.ai/api/v1"
+api_key = xyz"
 
-[providers.anthropic]
-base_url = "https://api.anthropic.com"
-api_key = "sk-ant-your-anthropic-key"
-default_models = ["claude-3-sonnet", "claude-3-haiku"]
+supported_parameters = ["stop_sequences", "seed"]
+
+[[models]]
+name = "Seed OSS 36B Instruct"
+model_id = "bytedance/seed-oss-36b-instruct"
+provider = "openrouter"
+
+supported_samplers = ["temperature", "top_p", "min_p", "repetition_penalty"]
+
 ```
 
 ### Running the Server
@@ -57,7 +60,7 @@ default_models = ["claude-3-sonnet", "claude-3-haiku"]
 uv run src/slut_proxy/main.py
 ```
 
-The server will start on `http://localhost:8000`!
+The server will start on `http://localhost:8080`!
 
 ## API Endpoints
 
@@ -109,14 +112,14 @@ curl -X POST "http://localhost:8000/v2/generate" \
 
 ### Admin Dashboard
 
-Visit `http://localhost:8000/v2/admin` in your browser (requires admin key in query params).
+Visit `http://localhost:8000/v2/admin` in your browser.
 
 ## Architecture
 
 The proxy is built with:
 
 - **Starlette** for the web framework
-- **msgspec** for fast JSON serialization
+- **msgspec** for fast JSON serialization & structs
 - **anyio-sqlite** for database operations
 - **TypeSpec** for API specification compliance
 
