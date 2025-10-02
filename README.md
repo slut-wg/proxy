@@ -41,7 +41,7 @@ admin_key = "test"
 name = "openrouter"
 type = "openai"
 base_url = "https://openrouter.ai/api/v1"
-api_key = xyz"
+api_key = "xyz"
 
 supported_parameters = ["stop_sequences", "seed"]
 
