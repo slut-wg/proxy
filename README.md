@@ -64,20 +64,7 @@ The server will start on `http://localhost:8080`!
 
 ## API Endpoints
 
-### SLUT Protocol (`/v2`)
-
-- `GET /v2/models` - List all available models
-- `GET /v2/models/{model_name}` - Get specific model info
-- `POST /v2/generate` - Generate text (sync or streaming)
-- `GET /v2/admin` - Admin dashboard
-- `GET /v2/admin/api_keys` - List API keys
-- `POST /v2/admin/api_keys` - Create new API key
-- `DELETE /v2/admin/api_keys` - Delete API key
-
-### OpenAI Compatibility (`/v1`)
-
-- `GET /v1/models` - Models in OpenAI format
-- `POST /v1/completions` - Completions in OpenAI format
+Docs are TODO! Please see [the spec](https://github.com/slut-wg/proxy) for now.
 
 ## Usage Examples
 
@@ -112,7 +99,7 @@ curl -X POST "http://localhost:8000/v2/generate" \
 
 ### Admin Dashboard
 
-Visit `http://localhost:8000/v2/admin` in your browser.
+Visit `http://localhost:8080/v2/admin` in your browser.
 
 ## Architecture
 
@@ -126,21 +113,6 @@ The proxy is built with:
 ## Configuration Options
 
 See `src/slut_proxy/models/config.py` for all available configuration options.
-
-## Development
-
-### Running Tests
-
-```bash
-uv run pytest
-```
-
-### Code Style
-
-```bash
-uv run ruff check
-uv run ruff format
-```
 
 ## License
 
